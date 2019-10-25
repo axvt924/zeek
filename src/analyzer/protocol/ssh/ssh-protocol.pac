@@ -271,6 +271,8 @@ refine connection SSH_Conn += {
 		int state_up_;
 		int state_down_;
 		int version_;
+		int version_client;
+		int version_server;
 		int encrypted_bytes_in_current_segment_;
 
 		bool kex_orig_;
@@ -283,6 +285,8 @@ refine connection SSH_Conn += {
 		state_up_   = VERSION_EXCHANGE;
 		state_down_ = VERSION_EXCHANGE;
 		version_    = UNK;
+		version_client    = UNK;
+		version_server    = UNK;
 		encrypted_bytes_in_current_segment_ = 0;
 
 		kex_seen_ = false;
@@ -339,15 +343,61 @@ refine connection SSH_Conn += {
 		return version_;
 		%}
 
+	# If the version is 1.99, that means the client/server is compatible
+	# with sshv1 and sshv2. So one says version 2 and the other 1.99
+	# the connection will be in version 2 otherwise if its version 1.x and
+	# 1.99 the connection be in version 1. See RFC 4253 chapter 5.
 	function update_version(v: bytestring, is_orig: bool) : bool
 		%{
-		if ( is_orig && ( v.length() >= 4 ) )
+		if ( v.length() >= 5 )
 			{
 			if ( v[4] == '2' )
-				version_ = SSH2;
+				{
+				if ( is_orig )
+					version_client = SSH2;
+				else
+					version_server = SSH2;
+				}
 			if ( v[4] == '1' )
-				version_ = SSH1;
+				{
+				if ( v.length() >= 8 && v[6] == '9' && v[7] == '9' )
+					{
+					if ( is_orig )
+						version_client = SSH199;
+					else
+						version_server = SSH199;
+					}
+				else
+					{
+					if ( is_orig)
+						version_client = SSH1;
+					else
+						version_server = SSH1;
+					}
+				}
 			}
+
+			if ( version_server == version_client )
+				version_ = version_server;
+			// SSH1 vs SSH2 -> Undefined
+			else if ( version_client == SSH1 && version_server == SSH2 )
+				version_ = UNK;
+			// SSH2 vs SSH1 -> Undefined
+			else if ( version_client == SSH2 && version_server == SSH1 )
+				version_ = UNK;
+			// SSH199 vs SSH2 -> 2
+			else if ( version_client == SSH199 && version_server == SSH2 )
+				version_ = version_server;
+			// SSH2 vs SSH199 -> 2
+			else if ( version_client == SSH2 && version_server == SSH199 )
+				version_ = version_client;
+			// SSH1 vs SSH199 -> 1
+			else if ( version_client == SSH1 && version_server == SSH199 )
+				version_ = version_client;
+			// SSH199 vs SSH1 -> 1
+			else if ( version_client == SSH199 && version_server == SSH1 )
+				version_ = version_server;
+
 		return true;
 		%}
 
