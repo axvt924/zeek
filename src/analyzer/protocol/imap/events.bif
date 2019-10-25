@@ -11,3 +11,10 @@ event imap_capabilities%(c: connection, capabilities: string_vec%);
 ##
 ## c: The connection.
 event imap_starttls%(c: connection%);
+
+event imap_request%(c: connection,
+			command: string, arg: string%);
+
+event imap_reply%(c: connection, command: string, arg: string%);
+
+event imap_data%(c: connection, is_orig: bool, data: string%);

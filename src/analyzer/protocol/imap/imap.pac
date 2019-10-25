@@ -32,7 +32,7 @@ connection IMAP_Conn(bro_analyzer: IMAPAnalyzer) {
 %include imap-protocol.pac
 
 flow IMAP_Flow(is_orig: bool) {
-	datagram = IMAP_PDU(is_orig) withcontext(connection, this);
+	flowunit = IMAP_PDU(is_orig) withcontext(connection, this);
 };
 
 %include imap-analyzer.pac
