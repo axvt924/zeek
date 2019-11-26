@@ -91,6 +91,8 @@ public:
 
 	void GetStats(Stats* stats);
 
+	void Terminate();
+
 protected:
 	friend class LookupCallback;
 	friend class DNS_Mgr_Request;
@@ -131,12 +133,10 @@ protected:
 	void DoProcess();
 
 	// IOSource interface.
-	void GetFds(iosource::FD_Set* read, iosource::FD_Set* write,
-	                    iosource::FD_Set* except) override;
-	double NextTimestamp(double* network_time) override;
 	void Process() override;
-	void Init() override;
-	const char* Tag() override { return "DNS_Mgr"; }
+	void InitSource() override;
+	const char* Tag() override	{ return "DNS_Mgr"; }
+	double GetNextTimeout() override	{ return -1; }
 
 	DNS_MgrMode mode;
 
