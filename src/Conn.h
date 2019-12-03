@@ -228,8 +228,6 @@ public:
 	void Describe(ODesc* d) const override;
 	void IDString(ODesc* d) const;
 
-	TimerMgr* GetTimerMgr() const;
-
 	// Returns true if connection has been received externally.
 	bool IsExternal() const	{ return conn_timer_mgr != 0; }
 

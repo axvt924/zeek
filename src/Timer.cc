@@ -41,7 +41,6 @@ const char* TimerNames[] = {
 	"TCPConnectionPartialClose",
 	"TCPConnectionResetTimer",
 	"TriggerTimer",
-	"TimerMgrExpireTimer",
 	"ThreadHeartbeat",
 };
 

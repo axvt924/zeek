@@ -512,14 +512,14 @@ void Connection::ConnectionEvent(EventHandlerPtr f, analyzer::Analyzer* a, val_l
 
 	// "this" is passed as a cookie for the event
 	mgr.QueueEvent(f, std::move(vl), SOURCE_LOCAL,
-			a ? a->GetID() : 0, GetTimerMgr(), this);
+			a ? a->GetID() : 0, timer_mgr, this);
 	}
 
 void Connection::ConnectionEventFast(EventHandlerPtr f, analyzer::Analyzer* a, val_list vl)
 	{
 	// "this" is passed as a cookie for the event
 	mgr.QueueEventFast(f, std::move(vl), SOURCE_LOCAL,
-			a ? a->GetID() : 0, GetTimerMgr(), this);
+			a ? a->GetID() : 0, timer_mgr, this);
 	}
 
 void Connection::ConnectionEvent(EventHandlerPtr f, analyzer::Analyzer* a, val_list* vl)
@@ -547,7 +547,7 @@ void Connection::AddTimer(timer_func timer, double t, int do_expire,
 		return;
 
 	Timer* conn_timer = new ConnectionTimer(this, timer, t, do_expire, type);
-	GetTimerMgr()->Add(conn_timer);
+	timer_mgr->Add(conn_timer);
 	timers.push_back(conn_timer);
 	}
 
@@ -566,23 +566,10 @@ void Connection::CancelTimers()
 	std::copy(timers.begin(), timers.end(), std::back_inserter(tmp));
 
 	for ( const auto& timer : tmp )
-		GetTimerMgr()->Cancel(timer);
+		timer_mgr->Cancel(timer);
 
 	timers_canceled = 1;
 	timers.clear();
-	}
-
-TimerMgr* Connection::GetTimerMgr() const
-	{
-	if ( ! conn_timer_mgr )
-		// Global manager.
-		return timer_mgr;
-
-	// We need to check whether the local timer manager still exists;
-	// it may have already been timed out, in which case we fall back
-	// to the global manager (though this should be rare).
-	TimerMgr* local_mgr = sessions->LookupTimerMgr(conn_timer_mgr, false);
-	return local_mgr ? local_mgr : timer_mgr;
 	}
 
 void Connection::FlipRoles()
