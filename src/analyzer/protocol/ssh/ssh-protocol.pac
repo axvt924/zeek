@@ -25,7 +25,7 @@ type SSH_Version(is_orig: bool) = record {
 	version : bytestring &oneline;
 } &let {
 	update_state   : bool = $context.connection.update_state(KEX_INIT, is_orig);
-	update_version : bool = $context.connection.update_version(version, is_orig);
+	update_version : bool = $context.connection.update_version(version);
 };
 
 type SSH_Key_Exchange(is_orig: bool) = record {
@@ -339,14 +339,34 @@ refine connection SSH_Conn += {
 		return version_;
 		%}
 
-	function update_version(v: bytestring, is_orig: bool) : bool
+	# If the version is 1.99, that means the client/server is compatible
+	# with sshv1 and sshv2. So one says version 2 and the other 1.99
+	# the connection will be in version 2 otherwise if its version 1.x and
+	# 1.99 the connection be in version 1. See RFC 4253 chapter 5.
+	function update_version(v: bytestring) : bool
 		%{
-		if ( is_orig && ( v.length() >= 4 ) )
+		if ( v.length() >= 5 )
 			{
 			if ( v[4] == '2' )
-				version_ = SSH2;
+				if (version_ == SSH1)
+					version_ = UNK;
+				else
+					version_ = SSH2;
 			if ( v[4] == '1' )
-				version_ = SSH1;
+				{
+					if (v.length() >= 8 && v[6] == '9' && v[7] == '9')
+						{
+						if ( version_ == SSH199 )
+							version_ = SSH2;
+						else if ( version_ == UNK )
+							version_ = SSH199;
+						}
+					else
+						if (version_ == SSH2)
+							version_ = UNK;
+						else
+							version_ = SSH1;
+				}
 			}
 		return true;
 		%}

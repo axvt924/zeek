@@ -169,9 +169,12 @@ event ssh_client_version(c: connection, version: string)
 	set_session(c);
 	c$ssh$client = version;
 
-	if ( ( |version| > 3 ) && ( version[4] == "1" ) )
-		c$ssh$version = 1;
-	if ( ( |version| > 3 ) && ( version[4] == "2" ) )
+	if ( ( |version| > 4 ) && ( version[4] == "1" ) )
+		if ( ( |version| > 8 ) && ( version[6] == "9" ) && ( version[7] == "9" ) )
+			c$ssh$version = 2;
+		else
+			c$ssh$version = 1;
+	if ( ( |version| > 4 ) && ( version[4] == "2" ) )
 		c$ssh$version = 2;
 	}
 
