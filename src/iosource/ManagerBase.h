@@ -198,6 +198,7 @@ private:
 	PktSrc* pkt_src = nullptr;
 
 	int dont_counts = 0;
+	int zero_timeout_count = 0;
 	WakeupHandler* wakeup = nullptr;
 };
 

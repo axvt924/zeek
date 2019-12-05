@@ -119,14 +119,17 @@ void ManagerBase::FindReadySources(std::vector<IOSource*>& ready)
 				timeout = next;
 				timeout_src = src->src;
 
-				if ( timeout == 0 )
+				if ( timeout == 0 && zero_timeout_count % 100 != 0 )
 					{
+					zero_timeout_count++;
 					ready.push_back(timeout_src);
 					return;
 					}
 				}
 			}
 		}
+
+	zero_timeout_count = 1;
 
 	// Call the appropriate poll method for what's available on the operating system.
 	Poll(ready, timeout, timeout_src);
