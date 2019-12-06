@@ -10,8 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: checkout
-      uses: "srt32/git-actions@v0.0.3"
-      args: "git submodule update --init --recursive"
+      run: "git submodule update --init --recursive"
     - name: configure
       run: ./configure
     - name: make
