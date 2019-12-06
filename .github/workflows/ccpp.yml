@@ -12,7 +12,7 @@ jobs:
     - name: checkout
       run: "git submodule update --init --recursive"
     - name: dependencies
-      run: "sudo apt-get install flex bison libpcap-dev"
+      run: "sudo apt-get install flex bison libpcap-dev python-dev swig zlib1g-dev"
     - name: configure
       run: ./configure
     - name: make
